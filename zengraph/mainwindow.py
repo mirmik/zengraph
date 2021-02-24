@@ -11,6 +11,7 @@ from zenframe.util import print_to_stderr
 
 import zengraph.settings
 
+
 class MainWindow(ZenFrame):
     def __init__(self,
                  title="zengraph",
@@ -20,8 +21,6 @@ class MainWindow(ZenFrame):
 
         super().__init__(
             title=title,
-            application_name = "zengraph",
+            application_name="zengraph",
             initial_communicator=initial_communicator,
             restore_gui=restore_gui)
-
-

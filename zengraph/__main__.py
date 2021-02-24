@@ -14,21 +14,24 @@ import zenframe.starter as frame
 
 from PyQt5 import QtWidgets
 
+
 def console_options_handle():
     parser = frame.ArgumentParser()
     pargs = parser.parse_args()
     return pargs
 
+
 def top_half(communicator):
-	pass
+    pass
+
 
 def bottom_half(communicator, init_size, scene):
-    #display = DisplayWidget(
+    # display = DisplayWidget(
     #    communicator=communicator,
     #    init_size=init_size)
-    #display.attach_scene(scene)
+    # display.attach_scene(scene)
 
-    #communicator.bind_handler(display.external_communication_command)
+    # communicator.bind_handler(display.external_communication_command)
     wdg = QtWidgets.QWidget()
 
     return wdg
@@ -36,7 +39,7 @@ def bottom_half(communicator, init_size, scene):
 
 def frame_creator(openpath, initial_communicator, norestore, unbound):
     from zengraph.mainwindow import MainWindow
-    
+
     mainwindow = MainWindow(
         initial_communicator=initial_communicator,
         restore_gui=not norestore)
