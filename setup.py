@@ -19,7 +19,7 @@ setup(
     packages=["zengraph"],
     version="0.0.0",
     license="MIT",
-    description="Graph for zenframe engine",
+    description="",
     author="mirmik",
     author_email="mirmikns@yandex.ru",
     url="https://github.com/mirmik/zengraph",
@@ -28,7 +28,9 @@ setup(
     keywords=["testing", "cad"],
     classifiers=[],
     package_data={
-        "zenframe": []
+        "zengraph": [
+            "gui/*"
+        ]
     },
     include_package_data=True,
     install_requires=requires,
