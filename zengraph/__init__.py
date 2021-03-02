@@ -1,1 +1,1 @@
-print("Init")
+from zengraph.showapi import *
