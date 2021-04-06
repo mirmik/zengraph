@@ -1,6 +1,13 @@
 from zengraph.showapi import *
 from zengraph.image_container import ImageContainer
 
+import sys
+from PyQt5.QtWidgets import QApplication
+
+APP = QApplication.instance()
+if APP is None:
+    APP = QApplication([])
+
 # def start_crow_spin():
 #	import pycrow
 #	import zenframe.finisher

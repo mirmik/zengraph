@@ -1,4 +1,8 @@
-from zenframe.unbound import unbound_worker_bottom_half
+from zenframe.unbound import (
+    unbound_worker_bottom_half,
+    unbound_frame_summon,
+    is_unbound_mode
+)
 import zengraph.display
 
 
@@ -7,6 +11,17 @@ def disp(wdg, a, b, c=1, d=1):
     display_widget.add(wdg, a, b, c, d)
 
 
-def show():
+def widget_creator(self):
     widget = zengraph.display.instance()
-    unbound_worker_bottom_half(widget=widget)
+    return widget
+
+
+def show():
+    if is_unbound_mode():
+        print("unbound_worker_bottom_half")
+        widget = zengraph.display.instance()
+        unbound_worker_bottom_half(widget=widget)
+
+    else:
+        print("unbound_frame_summon")
+        unbound_frame_summon(widget_creator, "zengraph")
