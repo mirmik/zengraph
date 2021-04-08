@@ -4,6 +4,7 @@ from zenframe.unbound import (
     is_unbound_mode
 )
 import zengraph.display
+import zenframe.finisher
 
 
 def disp(wdg, a, b, c=1, d=1):
@@ -16,7 +17,10 @@ def widget_creator(self):
     return widget
 
 
-def show():
+def show(onclose):
+    for d in onclose:
+        zenframe.finisher.register_destructor(d, d)
+
     if is_unbound_mode():
         print("unbound_worker_bottom_half")
         widget = zengraph.display.instance()
