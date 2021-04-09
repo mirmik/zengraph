@@ -2,7 +2,7 @@
 
 from zengraph import *
 
-from PyQt5.QtChart import QLineSeries, QChart, QChartView, QValueAxis, QCategoryAxis, QSplineSeries
+from PyQt5.QtChart import QLineSeries, QChart, QChartView, QScatterSeries, QValueAxis, QCategoryAxis, QSplineSeries
 from PyQt5.QtCore import QPoint, QPointF
 from PyQt5.QtGui import QPainter, QPen, QBrush
 
@@ -47,8 +47,8 @@ subscriber.subscribe(address, "bimanip/manip1", 2, 50, 0, 50)
 
 
 chart = FlowChart()
-series0 = chart.add_xyseries(maxinterval=1)
-series1 = chart.add_xyseries(maxinterval=1)
+series0 = chart.add_xyseries(maxinterval=5, type=QLineSeries)
+series1 = chart.add_xyseries(maxinterval=5, type=QLineSeries)
 
 chart.setTitle("Multiaxis chart example")
 
@@ -67,7 +67,7 @@ chartview.setRenderHint(QPainter.Antialiasing)
 stime = None
 
 
-def lalala():
+def lalala2():
     global stime
     if not stime:
         stime = time.time()
@@ -77,10 +77,13 @@ def lalala():
     series1.append(QPointF(time.time() - stime,
                            math.cos(time.time()*10)*10+10))
 
+
+def lalala():
     chart.update()
 
 
-AnimateThread(lalala, 0.01).start()
+a = AnimateThread(lalala2, 0.005)
+b = AnimateThread(lalala, 0.03)
 
 disp(chartview, 1, 1)
 show(onclose=[pycrow.stop_spin])

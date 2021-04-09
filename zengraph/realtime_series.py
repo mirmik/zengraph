@@ -9,13 +9,13 @@ import sys
 
 
 class FlowSeries:
-    def __init__(self, maxinterval, maxpoints=5000):
+    def __init__(self, maxinterval, maxpoints=5000, type=QLineSeries):
         self.maxpoints = maxpoints
         self.maxinterval = maxinterval
 
         self.data = []
 
-        self.series = QLineSeries()
+        self.series = type()
         self.series.setUseOpenGL(True)
         self.series.append(self.data)
 
@@ -30,6 +30,9 @@ class FlowSeries:
             del self.data[0]
 
     def range(self):
+        if len(self.data) == 0:
+            return 0, 0
+
         first_x = self.data[0].x()
         last_x = self.data[-1].x()
         return first_x, last_x
@@ -59,9 +62,9 @@ class FlowChart(QChart):
         self.setAxisX(self.axisX)
         self.setAxisY(self.axisY)
 
-    def add_xyseries(self, maxinterval, maxpoints=5000):
+    def add_xyseries(self, maxinterval, maxpoints=5000, type=QLineSeries):
         series = FlowSeries(
-            maxinterval=maxinterval, maxpoints=maxpoints)
+            maxinterval=maxinterval, maxpoints=maxpoints, type=type)
         self.addSeries(series.series)
         series.attachAxes(self.axisX, self.axisY)
         self.series_list.append(series)
