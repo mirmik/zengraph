@@ -19,7 +19,7 @@ def widget_creator(self):
 
 def show(onclose):
     for d in onclose:
-        zenframe.finisher.register_destructor(d, d)
+        zenframe.finisher.register_destructor(None, d)
 
     if is_unbound_mode():
         print("unbound_worker_bottom_half")

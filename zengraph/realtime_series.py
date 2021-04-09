@@ -5,19 +5,43 @@ from PyQt5.QtGui import QPainter, QPen, QBrush
 from PyQt5.QtCore import QPoint
 import PyQt5.QtCore
 
+import sys
+
 
 class FlowSeries:
-    def __init__(self, maxpoints, maxinterval, chart):
+    def __init__(self, maxinterval, maxpoints=5000):
         self.maxpoints = maxpoints
         self.maxinterval = maxinterval
-        self.first_x = 0
-        self.last_x = 0
 
         self.data = []
 
         self.series = QLineSeries()
         self.series.setUseOpenGL(True)
         self.series.append(self.data)
+
+    def attachAxes(self, x, y):
+        self.series.attachAxis(x)
+        self.series.attachAxis(y)
+
+    def append(self, point):
+        self.data.append(point)
+
+        while len(self.data) > self.maxpoints or self.data[-1].x() - self.data[0].x() > self.maxinterval:
+            del self.data[0]
+
+    def range(self):
+        first_x = self.data[0].x()
+        last_x = self.data[-1].x()
+        return first_x, last_x
+
+    def replace(self):
+        self.series.replace(self.data)
+
+
+class FlowChart(QChart):
+    def __init__(self):
+        super().__init__()
+        self.series_list = []
 
         self.axisX = QValueAxis()
         self.axisY = QValueAxis()
@@ -30,27 +54,31 @@ class FlowSeries:
         self.axisX.setLabelsBrush(self.axixBrush)
         self.axisX.setGridLineVisible(True)
 
-        chart.addSeries(self.series)
-        chart.setAxisX(self.axisX)
-        chart.setAxisY(self.axisY)
+        self.axisY.setRange(0, 28)
 
-        self.series.attachAxis(self.axisX)
-        self.series.attachAxis(self.axisY)
+        self.setAxisX(self.axisX)
+        self.setAxisY(self.axisY)
 
-        self.axisY.setRange(0, 20)
+    def add_xyseries(self, maxinterval, maxpoints=5000):
+        series = FlowSeries(
+            maxinterval=maxinterval, maxpoints=maxpoints)
+        self.addSeries(series.series)
+        series.attachAxes(self.axisX, self.axisY)
+        self.series_list.append(series)
+        return series
 
-    def append(self, point):
-        count = self.series.count()
-        self.data.append(point)
+    def update(self):
+        xmin = None
+        xmax = None
 
-        if len(self.data) > self.maxpoints:
-            del self.data[0]
+        for s in self.series_list:
+            r = s.range()
+            if xmin is None or xmin > r[0]:
+                xmin = r[0]
+            if xmax is None or xmax < r[1]:
+                xmax = r[1]
 
-        self.first_x = self.data[0].x()
-        self.last_x = self.data[-1].x()
+        self.axisX.setRange(xmin, xmax)
 
-        self.series.replace(self.data)
-        self.axisX.setRange(*self.range())
-
-    def range(self):
-        return self.first_x, self.last_x
+        for s in self.series_list:
+            s.replace()
