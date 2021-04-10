@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 
-from PyQt5.QtChart import QLineSeries, QChart, QChartView, QValueAxis, QCategoryAxis, QSplineSeries
+from PyQt5.QtChart import (
+    QChart, QChartView, QValueAxis, QCategoryAxis, 
+    QLineSeries, QSplineSeries
+)
 from PyQt5.QtGui import QPainter, QPen, QBrush
 from PyQt5.QtCore import QPoint
 import PyQt5.QtCore
@@ -85,3 +88,60 @@ class FlowChart(QChart):
 
         for s in self.series_list:
             s.replace()
+
+LineSeries = QLineSeries
+SplineSeries = QSplineSeries
+
+class Chart(QChart):
+    def __init__(self):
+        super().__init__()
+        self.series_list = []
+
+        self.axisX = QValueAxis()
+        self.axisY = QValueAxis()
+
+        self.axisPen = QPen(PyQt5.QtCore.Qt.red)
+        self.axisPen.setWidth(4)
+        self.axisX.setLinePen(self.axisPen)
+
+        self.axixBrush = QBrush(PyQt5.QtCore.Qt.green)
+        self.axisX.setLabelsBrush(self.axixBrush)
+        self.axisX.setGridLineVisible(True)
+
+        self.setAxisX(self.axisX)
+        self.setAxisY(self.axisY)
+
+    def add_xyseries(self, type=LineSeries):
+        series = type()
+        self.addSeries(series)
+        series.attachAxis(self.axisX)
+        series.attachAxis(self.axisY)
+        self.series_list.append(series)
+        return series
+
+    def set_xrange(self, xmin, xmax):
+        self.axisX.setRange(xmin, xmax)
+
+    def set_yrange(self, ymin, ymax):
+        self.axisY.setRange(ymin, ymax)
+
+    def autoscale(self):
+        xmax = ymax = float("-inf")
+        xmin = ymin = float("+inf")
+
+        for s in self.series_list:
+            points = s.pointsVector()
+
+            for p in points:
+                if p.x() < xmin: xmin = p.x() 
+                if p.x() > xmax: xmax = p.x()
+                if p.y() < ymin: ymin = p.y() 
+                if p.y() > ymax: ymax = p.y()
+
+
+        self.set_xrange(xmin, xmax)
+        self.set_yrange(ymin, ymax)
+
+ChartView = QChartView
+
+#Chart = QChart

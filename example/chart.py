@@ -8,7 +8,7 @@ from PyQt5.QtGui import QPainter, QPen, QBrush
 
 import PyQt5.QtCore
 
-from zengraph.realtime_series import FlowSeries, FlowChart
+#from zengraph.realtime_series import FlowSeries#, FlowChart
 from zenframe.animate import AnimateThread
 
 import math
