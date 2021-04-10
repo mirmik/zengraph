@@ -12,8 +12,9 @@ def disp(wdg, a=1, b=1, c=1, d=1):
     display_widget.add(wdg, a, b, c, d)
 
 
-def widget_creator(self):
+def widget_creator(communicator):
     widget = zengraph.display.instance()
+    communicator.bind_handler(widget.message_handler)
     return widget
 
 

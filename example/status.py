@@ -20,9 +20,7 @@ def incoming(pack):
 
 
 print("A")
-crowker_address = pycrow.address(".12.127.0.0.1:10009")
-#ugate = pycrow.udpgate()
-# ugate.bind(12)
+crowker_address = pycrow.address(".12.192.168.1.39:10009")
 pycrow.create_udpgate(12, 0)
 pycrow.diagnostic_setup(True, False)
 
@@ -38,7 +36,7 @@ pycrow.start_spin()
 pycrow.start_resubscribe_thread(1000)
 
 print("D")
-s = StatusWidget(["aidan", "base", "zippo"], cols=3)
+s = StatusWidget(["aidan", "base", "base-user"], cols=3)
 
 s.set_status("base", True)
 
