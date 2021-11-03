@@ -5,6 +5,7 @@ class DisplayWidget(QtWidgets.QWidget):
     def __init__(self):
         super().__init__()
         self._inited1 = False
+        self.widgets = []
 
         pal = self.palette()
         pal.setColor(QtGui.QPalette.Background, QtCore.Qt.black)
@@ -16,6 +17,7 @@ class DisplayWidget(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
     def add(self, wdg, row, col, rowSpan=1, colSpan=1):
+        self.widgets.append(wdg)
         self.layout.addWidget(wdg, row, col, rowSpan, colSpan)
 
     def message_handler(self, data):
@@ -32,6 +34,17 @@ class DisplayWidget(QtWidgets.QWidget):
                 QtCore.Qt.SubWindow)
 
             self._inited1 = True
+
+    def update_timer_handle(self):
+        for wdg in self.widgets:
+            wdg.update()
+
+        #self.update()
+
+    def start_update_timer(self, step):
+        self.tim = QtCore.QTimer()
+        self.tim.timeout.connect(self.update_timer_handle)
+        self.tim.start(step)
 
 
 DISPLAY = None

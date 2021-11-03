@@ -22,15 +22,27 @@ class FlowSeries:
         self.series.setUseOpenGL(True)
         self.series.append(self.data)
 
+        self.last_timestamp = 0
+
     def attachAxes(self, x, y):
         self.series.attachAxis(x)
         self.series.attachAxis(y)
 
-    def append(self, point):
+    def append(self, point, timestamp):
+        if len(self.data) != 0 and timestamp < self.last_timestamp:
+            self.data.clear()
+
         self.data.append(point)
 
-        while len(self.data) > self.maxpoints or self.data[-1].x() - self.data[0].x() > self.maxinterval:
-            del self.data[0]
+        if self.maxinterval != -1:
+            while len(self.data) > self.maxpoints or self.data[-1].x() - self.data[0].x() > self.maxinterval:
+                del self.data[0]
+
+        else:
+            while len(self.data) > self.maxpoints:
+                del self.data[0]
+
+        self.last_timestamp = timestamp
 
     def range(self):
         if len(self.data) == 0:
@@ -55,10 +67,13 @@ class FlowChart(QChart):
         self.axisPen = QPen(PyQt5.QtCore.Qt.red)
         self.axisPen.setWidth(4)
         self.axisX.setLinePen(self.axisPen)
+        self.axisY.setLinePen(self.axisPen)
 
         self.axixBrush = QBrush(PyQt5.QtCore.Qt.green)
         self.axisX.setLabelsBrush(self.axixBrush)
         self.axisX.setGridLineVisible(True)
+        self.axisY.setLabelsBrush(self.axixBrush)
+        self.axisY.setGridLineVisible(True)
 
         self.axisY.setRange(0, 28)
 
@@ -72,6 +87,9 @@ class FlowChart(QChart):
         series.attachAxes(self.axisX, self.axisY)
         self.series_list.append(series)
         return series
+        
+    def set_yrange(self, ymin, ymax):
+        self.axisY.setRange(ymin, ymax)
 
     def update(self):
         xmin = None
@@ -89,10 +107,62 @@ class FlowChart(QChart):
         for s in self.series_list:
             s.replace()
 
+
+#class StaticChart(QChart):
+#    def __init__(self):
+#        super().__init__()
+#        self.series_list = []
+#
+#        self.axisX = QValueAxis()
+#        self.axisY = QValueAxis()
+#
+#        self.axisPen = QPen(PyQt5.QtCore.Qt.red)
+#        self.axisPen.setWidth(4)
+#        self.axisX.setLinePen(self.axisPen)
+#
+#        self.axixBrush = QBrush(PyQt5.QtCore.Qt.green)
+#        self.axisX.setLabelsBrush(self.axixBrush)
+#        self.axisX.setGridLineVisible(True)
+#
+#        self.axisY.setRange(0, 28)
+#
+#        self.setAxisX(self.axisX)
+#        self.setAxisY(self.axisY)
+#
+#    def add_xyseries(self, maxinterval=-1, maxpoints=5000, type=QLineSeries):
+#        series = FlowSeries(
+#            maxinterval=maxinterval, maxpoints=maxpoints, type=type)
+#        self.addSeries(series.series)
+#        series.attachAxes(self.axisX, self.axisY)
+#        self.series_list.append(series)
+#        return series
+#
+#    def update(self):
+#        for s in self.series_list:
+#            s.replace()
+
 LineSeries = QLineSeries
 SplineSeries = QSplineSeries
 
-class Chart(QChart):
+
+class StaticSeries(QLineSeries):
+    def __init__(self):
+        super().__init__()
+        self.setUseOpenGL(True)
+        self.last_time_coord = 0
+
+    def append(self, point, timestamp):
+        if timestamp < self.last_time_coord:
+            self.clear()
+
+        super().append(point)
+        self.last_time_coord = timestamp
+
+    def series(self):
+        return self
+
+
+class StaticChart(QChart):
     def __init__(self):
         super().__init__()
         self.series_list = []
@@ -111,7 +181,7 @@ class Chart(QChart):
         self.setAxisX(self.axisX)
         self.setAxisY(self.axisY)
 
-    def add_xyseries(self, type=LineSeries):
+    def add_xyseries(self, type=StaticSeries):
         series = type()
         self.addSeries(series)
         series.attachAxis(self.axisX)
