@@ -5,9 +5,9 @@ from zengraph import flowplot, plot, show
 import threading
 from rxsignal import *
 
-t = range(0, 100) * 0.01
+t = rxrange(0, 100) * 0.01
 g = t.map(lambda x: 1) 
-s = [aperiodic_filter(g, 0.1*i, 0.01) for i in range(10)]
+s = [aperiodic_filter(g, 0.05*i, 0.01) for i in range(1, 40)]
 
 plot(t, *s)
 show()
