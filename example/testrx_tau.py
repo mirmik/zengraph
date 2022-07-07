@@ -1,41 +1,15 @@
 #!/usr/bin/env python3
 #coding: utf-8
 
-from zengraph import flowplot, plot, show, observable,subject
-from zengraph import interval, range
-import reactivex as rx
+from zengraph import flowplot, plot, show
 import threading
+from rxsignal import *
 
-A = 0
-B = True
+t = range(0, 100) * 0.01
+g = t.map(lambda x: 1) 
+s1 = aperiodic_filter(g, 0.1, 0.01)
+s2 = aperiodic_filter(g, 0.2, 0.01)
+s3 = aperiodic_filter(g, 0.3, 0.01)
 
-xx = subject(rx.subject.Subject())
-
-def sss():
-	global B
-	while True:
-		if B:
-			B=False
-			xx.on_next(A)
-
-T = 0.3
-T2 = 0.4
-
-R = 0.02
-
-def f(a):
-	global A, B
-	A=a
-	B=True
-
-t = range(0,100)*R
-e = t.map(lambda a: 1) - xx
-s = xx + e*0.1
-s.subscribe(f)
-
-plot(t, xx)
-
-thr = threading.Thread(target=sss)
-thr.start()
-
+plot(t, s1, s2, s3)
 show()

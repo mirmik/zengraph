@@ -231,22 +231,29 @@ class StaticChart(QChart):
 ChartView = QChartView
 
 
-def create_chart(xobservable, yobservable, position=(1,1,1,1)):
+def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
     from zengraph import observable
+    yobservable2 = []    
     if isinstance(xobservable, observable):
         xobservable = xobservable.o
-    if isinstance(yobservable, observable):
-        yobservable = yobservable.o
+    for i in range(len(yobservable)):
+        if isinstance(yobservable[i], observable):
+            yobservable2.append(yobservable[i].o)
+
+    serieses = []
+    l = len(yobservable)
 
     def update(x):
-        series.append_xy(QPointF(x[0], x[1]))
+        for i in range(l):
+            serieses[i].append_xy(QPointF(x[0], x[1+i]))
         chart.autoscale()
 
     chart = StaticChart()
-    series = chart.add_xyseries()
+    for y in yobservable:
+        serieses.append(chart.add_xyseries())
     view = ChartView(chart)
 
-    a = rx.zip(xobservable, yobservable)
+    a = rx.zip(xobservable, *yobservable)
     a.subscribe(update)
     chart.autoscale()
 
@@ -255,7 +262,6 @@ def create_chart(xobservable, yobservable, position=(1,1,1,1)):
 def create_flowchart(xobservable, *yobservable, position=(1,1,1,1), interval=100):
     from zengraph import observable
     yobservable2 = []    
-
     if isinstance(xobservable, observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):

@@ -4,10 +4,13 @@ from zengraph.image_container import ImageContainer
 import sys
 from PyQt5.QtWidgets import QApplication
 import reactivex as rx
+import reactivex
 from reactivex import operators as ops
 from reactivex import Observable
 import math
 import operator
+import queue
+import threading
 
 APP = QApplication.instance()
 if APP is None:
@@ -61,11 +64,29 @@ class observable:
         return self.div(oth)
 
 class subject(observable):
-    def __init__(self, o):
-        super().__init__(o)
+    def __init__(self, subject=None):
+        if subject is None:
+            subject = reactivex.subject.Subject()
+        super().__init__(subject)
 
     def on_next(self, val):
         self.o.on_next(val)
+
+class feedback_subject(subject):
+    def __init__(self):
+        super().__init__(subject = reactivex.subject.ReplaySubject())
+        self.q = queue.Queue()
+        self.thr = threading.Thread(target=self.foo)
+        self.thr.start()
+
+    def foo(self):
+        while True:
+            val = self.q.get()
+            super().on_next(val)
+
+    def on_next(self, val):
+        self.q.put(val)
+
 
 def interval(d):
     return observable(rx.interval(d))
