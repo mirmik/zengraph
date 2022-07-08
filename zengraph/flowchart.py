@@ -12,6 +12,7 @@ import sys
 from zengraph.showapi import disp
 import reactivex as rx
 from reactivex import operators as ops
+import rxsignal
 
 
 class FlowSeries:
@@ -20,6 +21,8 @@ class FlowSeries:
         self.maxinterval = maxinterval
 
         self.data = []
+        self.ymin = 0
+        self.ymax = 0
 
         self.series = type()
         self.series.setUseOpenGL(True)
@@ -45,10 +48,20 @@ class FlowSeries:
             while len(self.data) > self.maxpoints:
                 del self.data[0]
 
+        if point.y() < self.ymin:
+            self.ymin = point.y()
+        if point.y() > self.ymax:
+            self.ymax = point.y()
+
         self.last_timestamp = timestamp
 
     def append_xy(self, point):
         self.data.append(point)
+
+        if point.y() < self.ymin:
+            self.ymin = point.y()
+        if point.y() > self.ymax:
+            self.ymax = point.y()
 
         if self.maxinterval != -1:
             while len(self.data) > self.maxpoints or self.data[-1].x() - self.data[0].x() > self.maxinterval:
@@ -58,7 +71,7 @@ class FlowSeries:
             while len(self.data) > self.maxpoints:
                 del self.data[0]
 
-    def range(self):
+    def xrange(self):
         if len(self.data) == 0:
             return 0, 0
 
@@ -66,14 +79,21 @@ class FlowSeries:
         last_x = self.data[-1].x()
         return first_x, last_x
 
+    def yrange(self):
+        return self.ymin, self.ymax
+
     def replace(self):
         self.series.replace(self.data)
 
 
 class FlowChart(QChart):
-    def __init__(self):
+    def __init__(self, yautoscale=True):
         super().__init__()
         self.series_list = []
+
+        self.ymin = 0
+        self.ymax = 0
+        self.yautoscale = yautoscale
 
         self.axisX = QValueAxis()
         self.axisY = QValueAxis()
@@ -108,55 +128,31 @@ class FlowChart(QChart):
     def update(self):
         xmin = None
         xmax = None
+        ymin = None
+        ymax = None
 
         for s in self.series_list:
-            r = s.range()
+            r = s.xrange()
             if xmin is None or xmin > r[0]:
                 xmin = r[0]
             if xmax is None or xmax < r[1]:
                 xmax = r[1]
 
+        for s in self.series_list:
+            r = s.yrange()
+            if ymin is None or ymin > r[0]:
+                ymin = r[0]
+            if ymax is None or ymax < r[1]:
+                ymax = r[1]
+
         self.axisX.setRange(xmin, xmax)
+        self.axisY.setRange(ymin, ymax)
 
         for s in self.series_list:
             s.replace()
 
-#class StaticChart(QChart):
-#    def __init__(self):
-#        super().__init__()
-#        self.series_list = []
-#
-#        self.axisX = QValueAxis()
-#        self.axisY = QValueAxis()
-#
-#        self.axisPen = QPen(PyQt5.QtCore.Qt.red)
-#        self.axisPen.setWidth(4)
-#        self.axisX.setLinePen(self.axisPen)
-#
-#        self.axixBrush = QBrush(PyQt5.QtCore.Qt.green)
-#        self.axisX.setLabelsBrush(self.axixBrush)
-#        self.axisX.setGridLineVisible(True)
-#
-#        self.axisY.setRange(0, 28)
-#
-#        self.setAxisX(self.axisX)
-#        self.setAxisY(self.axisY)
-#
-#    def add_xyseries(self, maxinterval=-1, maxpoints=5000, type=QLineSeries):
-#        series = FlowSeries(
-#            maxinterval=maxinterval, maxpoints=maxpoints, type=type)
-#        self.addSeries(series.series)
-#        series.attachAxes(self.axisX, self.axisY)
-#        self.series_list.append(series)
-#        return series
-#
-#    def update(self):
-#        for s in self.series_list:
-#            s.replace()
-
 LineSeries = QLineSeries
 SplineSeries = QSplineSeries
-
 
 class StaticSeries(QLineSeries):
     def __init__(self):
@@ -232,12 +228,11 @@ ChartView = QChartView
 
 
 def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
-    from zengraph import observable
     yobservable2 = []    
-    if isinstance(xobservable, observable):
+    if isinstance(xobservable, rxsignal.observable.observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
-        if isinstance(yobservable[i], observable):
+        if isinstance(yobservable[i], rxsignal.observable.observable):
             yobservable2.append(yobservable[i].o)
 
     serieses = []
@@ -260,12 +255,11 @@ def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
     disp(view, *position)
 
 def create_flowchart(xobservable, *yobservable, position=(1,1,1,1), interval=100):
-    from zengraph import observable
     yobservable2 = []    
-    if isinstance(xobservable, observable):
+    if isinstance(xobservable, rxsignal.observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
-        if isinstance(yobservable[i], observable):
+        if isinstance(yobservable[i], rxsignal.observable):
             yobservable2.append(yobservable[i].o)
 
     serieses = []
