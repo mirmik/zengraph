@@ -229,10 +229,10 @@ ChartView = QChartView
 
 def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
     yobservable2 = []    
-    if isinstance(xobservable, rxsignal.observable.observable):
+    if isinstance(xobservable, rxsignal.Observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
-        if isinstance(yobservable[i], rxsignal.observable.observable):
+        if isinstance(yobservable[i], rxsignal.Observable):
             yobservable2.append(yobservable[i].o)
 
     serieses = []
@@ -256,19 +256,23 @@ def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
 
 def create_flowchart(xobservable, *yobservable, position=(1,1,1,1), interval=100):
     yobservable2 = []    
-    if isinstance(xobservable, rxsignal.observable):
+    if isinstance(xobservable, rxsignal.Observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
-        if isinstance(yobservable[i], rxsignal.observable):
-            yobservable2.append(yobservable[i].o)
+        #if isinstance(yobservable[i], rxsignal.Observable):
+        yobservable2.append(yobservable[i].o)
 
     serieses = []
     l = len(yobservable)
         
     def update(x):
-        for i in range(l):
-            serieses[i].append_xy(QPointF(x[0], x[1+i]))
-        chart.update()
+        try:
+            for i in range(l):
+                serieses[i].append_xy(QPointF(x[0], x[1+i]))
+            chart.update()
+        except Exception as e:
+            print(e, x)
+            pass
 
     chart = FlowChart()
     for y in yobservable:

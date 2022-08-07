@@ -2,12 +2,12 @@
 #coding: utf-8
 
 from zengraph import flowplot, plot, show
-from zengraph import interval, range
+from rxsignal import *
 
 T = 0.3
 T2 = 0.4
 R = 0.02
-z = interval(R)
+z = rxinterval(R)
 t = z*R
 s = (t/T).sin()
 c = (t/T).cos()
