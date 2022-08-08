@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from PyQt5.QtChart import (
-    QChart, QChartView, QValueAxis, QCategoryAxis, 
+    QChart, QChartView, QValueAxis, QCategoryAxis,
     QLineSeries, QSplineSeries
 )
 from PyQt5.QtGui import QPainter, QPen, QBrush
@@ -121,7 +121,7 @@ class FlowChart(QChart):
         series.attachAxes(self.axisX, self.axisY)
         self.series_list.append(series)
         return series
-        
+
     def set_yrange(self, ymin, ymax):
         self.axisY.setRange(ymin, ymax)
 
@@ -137,22 +137,25 @@ class FlowChart(QChart):
                 xmin = r[0]
             if xmax is None or xmax < r[1]:
                 xmax = r[1]
-
-        for s in self.series_list:
-            r = s.yrange()
-            if ymin is None or ymin > r[0]:
-                ymin = r[0]
-            if ymax is None or ymax < r[1]:
-                ymax = r[1]
-
         self.axisX.setRange(xmin, xmax)
-        self.axisY.setRange(ymin, ymax)
+
+        if self.yautoscale:
+            for s in self.series_list:
+                r = s.yrange()
+                if ymin is None or ymin > r[0]:
+                    ymin = r[0]
+                if ymax is None or ymax < r[1]:
+                    ymax = r[1]
+
+            self.axisY.setRange(ymin, ymax)
 
         for s in self.series_list:
             s.replace()
 
+
 LineSeries = QLineSeries
 SplineSeries = QSplineSeries
+
 
 class StaticSeries(QLineSeries):
     def __init__(self):
@@ -169,7 +172,7 @@ class StaticSeries(QLineSeries):
 
     def append_xy(self, point):
         super().append(point)
-        
+
     def series(self):
         return self
 
@@ -215,20 +218,24 @@ class StaticChart(QChart):
             points = s.pointsVector()
 
             for p in points:
-                if p.x() < xmin: xmin = p.x() 
-                if p.x() > xmax: xmax = p.x()
-                if p.y() < ymin: ymin = p.y() 
-                if p.y() > ymax: ymax = p.y()
-
+                if p.x() < xmin:
+                    xmin = p.x()
+                if p.x() > xmax:
+                    xmax = p.x()
+                if p.y() < ymin:
+                    ymin = p.y()
+                if p.y() > ymax:
+                    ymax = p.y()
 
         self.set_xrange(xmin, xmax)
         self.set_yrange(ymin, ymax)
 
+
 ChartView = QChartView
 
 
-def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
-    yobservable2 = []    
+def create_chart(xobservable, *yobservable, position=(1, 1, 1, 1)):
+    yobservable2 = []
     if isinstance(xobservable, rxsignal.Observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
@@ -254,17 +261,23 @@ def create_chart(xobservable, *yobservable, position=(1,1,1,1)):
 
     disp(view, *position)
 
-def create_flowchart(xobservable, *yobservable, position=(1,1,1,1), interval=100):
-    yobservable2 = []    
+
+def create_flowchart(xobservable,
+                     *yobservable,
+                     position=(1, 1, 1, 1),
+                     interval=100,
+                     autoscale=False,
+                     yrange=(-1, 1)):
+    yobservable2 = []
     if isinstance(xobservable, rxsignal.Observable):
         xobservable = xobservable.o
     for i in range(len(yobservable)):
-        #if isinstance(yobservable[i], rxsignal.Observable):
+        # if isinstance(yobservable[i], rxsignal.Observable):
         yobservable2.append(yobservable[i].o)
 
     serieses = []
     l = len(yobservable)
-        
+
     def update(x):
         try:
             for i in range(l):
@@ -274,19 +287,21 @@ def create_flowchart(xobservable, *yobservable, position=(1,1,1,1), interval=100
             print(e, x)
             pass
 
-    chart = FlowChart()
+    chart = FlowChart(yautoscale=autoscale)
     for y in yobservable:
         serieses.append(chart.add_xyseries(maxinterval=interval))
     view = ChartView(chart)
-    chart.set_yrange(-1,1)
+    chart.set_yrange(*yrange)
 
     a = rx.zip(xobservable, *yobservable2)
     a.subscribe(update)
 
     disp(view, *position)
 
+
 def plot(*args, **kwargs):
     return create_chart(*args, **kwargs)
+
 
 def flowplot(*args, **kwargs):
     return create_flowchart(*args, **kwargs)
